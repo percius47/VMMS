@@ -60,7 +60,7 @@ export function Navbar() {
 
   // Filter nav items based on user role
   const navItems = [
-    { name: "Dashboard", href: "/dashboard" },
+    // { name: "Dashboard", href: "/dashboard" },
     // Only show Vendors tab to company contacts, not to vendors
     ...(isCompanyContact ? [{ name: "Vendors", href: "/vendors" }] : []),
   ];
