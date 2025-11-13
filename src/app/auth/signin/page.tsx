@@ -19,7 +19,7 @@ export default function SignIn() {
 
     try {
       await signIn(email, password);
-      router.push("/vendors");
+      router.push("/role-selection");
     } catch (err: any) {
       setError(err.message || "Failed to sign in");
     } finally {

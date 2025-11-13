@@ -7,7 +7,12 @@ export default function Confirmation() {
             Check your email
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            We've sent a confirmation email to your inbox. Please click the link in the email to confirm your account.
+            We've sent a confirmation email to your inbox. Please click the link
+            in the email to confirm your account.
+          </p>
+          <p className="mt-4 text-center text-sm text-gray-600">
+            After confirming your email, you'll be redirected to select your
+            role as either a Vendor or Company Representative.
           </p>
         </div>
       </div>

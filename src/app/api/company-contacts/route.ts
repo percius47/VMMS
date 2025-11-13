@@ -14,15 +14,15 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Fetch all vendors (in a real app, you might want to add pagination and filters)
+    // Fetch all company contacts (in a real app, you might want to add pagination and filters)
     const { data, error } = await supabase
-      .from("vendors")
+      .from("company_contacts")
       .select("*")
       .eq("is_active", true);
 
     if (error) {
       return NextResponse.json(
-        { error: "Failed to fetch vendors" },
+        { error: "Failed to fetch company contacts" },
         { status: 500 }
       );
     }
@@ -30,7 +30,7 @@ export async function GET() {
     return NextResponse.json({ data });
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to fetch vendors" },
+      { error: "Failed to fetch company contacts" },
       { status: 500 }
     );
   }
@@ -39,7 +39,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const vendorData = await request.json();
+    const companyData = await request.json();
 
     const {
       data: { user },
@@ -49,26 +49,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if user already has a vendor profile
-    const { data: existingVendor, error: existingVendorError } = await supabase
-      .from("vendors")
-      .select("id")
-      .eq("user_id", user.id)
-      .single();
+    // Check if user already has a company contact profile
+    const { data: existingCompany, error: existingCompanyError } =
+      await supabase
+        .from("company_contacts")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
 
-    if (existingVendor && !existingVendorError) {
+    if (existingCompany && !existingCompanyError) {
       return NextResponse.json(
-        { error: "Vendor profile already exists" },
+        { error: "Company contact profile already exists" },
         { status: 400 }
       );
     }
 
-    // Create new vendor
+    // Create new company contact
     const { data, error } = await supabase
-      .from("vendors")
+      .from("company_contacts")
       .insert([
         {
-          ...vendorData,
+          ...companyData,
           user_id: user.id,
           status: "pending_approval",
           is_active: true,
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       return NextResponse.json(
-        { error: "Failed to create vendor" },
+        { error: "Failed to create company contact" },
         { status: 500 }
       );
     }
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ data });
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to create vendor" },
+      { error: "Failed to create company contact" },
       { status: 500 }
     );
   }

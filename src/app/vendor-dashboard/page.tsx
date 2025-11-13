@@ -50,21 +50,44 @@ export default function VendorDashboard() {
 
   const [vendor, setVendor] = useState<Vendor | null>(null);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
-  const [hideEditButton, setHideEditButton] = useState(false);
+  // Removed editing state as we now use a separate edit page
 
   useEffect(() => {
     if (!user) {
       router.push("/login");
     } else {
-      fetchVendorData();
+      checkUserStatus();
     }
   }, [user, router]);
 
-  const fetchVendorData = async () => {
+  const checkUserStatus = async () => {
     try {
       setLoading(true);
 
+      // First check if user is a company contact
+      const { data: companyData, error: companyError } = await supabase
+        .from("company_contacts")
+        .select("id")
+        .eq("user_id", user?.id)
+        .single();
+
+      if (companyData && !companyError) {
+        // User is a company contact, redirect to company dashboard
+        router.push("/company-dashboard");
+        return;
+      }
+
+      // If not a company contact, fetch vendor data
+      fetchVendorData();
+    } catch (error) {
+      console.error("Error checking user status:", error);
+      // Still try to fetch vendor data as fallback
+      fetchVendorData();
+    }
+  };
+
+  const fetchVendorData = async () => {
+    try {
       const { data, error } = await supabase
         .from("vendors")
         .select("*")
@@ -86,8 +109,6 @@ export default function VendorDashboard() {
 
   // Function to handle successful edit
   const handleEditSuccess = () => {
-    setHideEditButton(true);
-    setEditing(false); // Exit editing mode
     // Refresh the vendor data after a short delay to ensure the DB is updated
     setTimeout(() => {
       fetchVendorData();
@@ -96,11 +117,7 @@ export default function VendorDashboard() {
 
   // Handle edit toggle (for both Edit and Cancel buttons)
   const handleEditToggle = () => {
-    // If we were in editing mode and are canceling, show the edit button again
-    if (editing) {
-      setHideEditButton(false);
-    }
-    setEditing(!editing);
+    // This function is no longer needed as we use a separate edit page
   };
 
   if (loading) {
@@ -120,24 +137,19 @@ export default function VendorDashboard() {
             <h1 className="text-2xl font-bold text-gray-900">
               Vendor Dashboard
             </h1>
-            {
-              <button
-                onClick={handleEditToggle}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                {editing ? "Cancel Edit" : "Edit Profile"}
-              </button>
-            }
+            <button
+              onClick={() => router.push("/vendor-edit")}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Edit Profile
+            </button>
           </div>
 
-          {editing ? (
-            <EditVendorForm vendor={vendor} onSuccess={handleEditSuccess} />
-          ) : (
-            <div className="bg-white shadow rounded-lg overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-xl font-semibold text-gray-800">
-                  Vendor Profile
-                </h2>
+          <div className="bg-white shadow rounded-lg overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-800">
+                Vendor Profile
+              </h2>
                 <div className="mt-1 flex items-center">
                   <span
                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -369,9 +381,9 @@ export default function VendorDashboard() {
                 </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      
     );
   }
 

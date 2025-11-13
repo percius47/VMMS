@@ -115,7 +115,7 @@ export default function VendorOnboardingForm() {
       setSuccess(true);
       // Redirect to vendor dashboard after successful submission
       setTimeout(() => {
-        router.push("/vendors");
+        router.push("/vendor-dashboard");
       }, 2000);
     } catch (err: any) {
       setError(err.message || "An error occurred while submitting the form");
@@ -199,6 +199,57 @@ export default function VendorOnboardingForm() {
     "Other",
   ];
 
+  const [validatingGST, setValidatingGST] = useState(false);
+  const [gstValidated, setGstValidated] = useState(false);
+  const [businessDetails, setBusinessDetails] = useState<any>(null);
+
+  const validateGST = async () => {
+    if (!formData.gst_number) {
+      setError("Please enter a GST number first");
+      return;
+    }
+
+    setValidatingGST(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/gst-validation", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ gstNumber: formData.gst_number }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to validate GST number");
+      }
+
+      // Auto-fill form fields with GST data
+      setFormData((prev) => ({
+        ...prev,
+        company_name: result.data.businessName || prev.company_name,
+        legal_name: result.data.tradeName || prev.legal_name,
+        address_line1:
+          `${result.data.address.building || ""} ${
+            result.data.address.street || ""
+          }`.trim() || prev.address_line1,
+        city: result.data.address.city || prev.city,
+        state: result.data.address.state || prev.state,
+        pincode: result.data.address.pincode || prev.pincode,
+      }));
+
+      setGstValidated(true);
+      setBusinessDetails(result.data);
+    } catch (err: any) {
+      setError(err.message || "An error occurred while validating GST number");
+    } finally {
+      setValidatingGST(false);
+    }
+  };
+
   if (success) {
     return (
       <div className="max-w-4xl mx-auto py-8 px-4">
@@ -231,6 +282,44 @@ export default function VendorOnboardingForm() {
           {error && (
             <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
+
+          {/* Business Details Section (shown after GST validation) */}
+          {gstValidated && businessDetails && (
+            <div className="mb-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Business Details from GST
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="font-medium">Business Name:</p>
+                  <p>{businessDetails.businessName}</p>
+                </div>
+                <div>
+                  <p className="font-medium">Trade Name:</p>
+                  <p>{businessDetails.tradeName}</p>
+                </div>
+                <div>
+                  <p className="font-medium">GSTIN:</p>
+                  <p>{businessDetails.gstin}</p>
+                </div>
+                <div>
+                  <p className="font-medium">Status:</p>
+                  <p>{businessDetails.status}</p>
+                </div>
+                <div>
+                  <p className="font-medium">Registration Date:</p>
+                  <p>{businessDetails.dateOfRegistration}</p>
+                </div>
+                <div>
+                  <p className="font-medium">Business Activity:</p>
+                  <p>
+                    {businessDetails.businessActivities?.[0]
+                      ?.principalBusinessActivity || "N/A"}
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 
@@ -548,16 +637,31 @@ export default function VendorOnboardingForm() {
                 >
                   GST Number <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="text"
-                  id="gst_number"
-                  name="gst_number"
-                  value={formData.gst_number}
-                  onChange={handleChange}
-                  required
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  placeholder="12AAAAA1234AAAAA"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    id="gst_number"
+                    name="gst_number"
+                    value={formData.gst_number}
+                    onChange={handleChange}
+                    required
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    placeholder="12AAAAA1234AAAAA"
+                  />
+                  <button
+                    type="button"
+                    onClick={validateGST}
+                    disabled={validatingGST || !formData.gst_number}
+                    className="mt-1 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                  >
+                    {validatingGST ? "Validating..." : "Validate"}
+                  </button>
+                </div>
+                {gstValidated && (
+                  <p className="mt-1 text-sm text-green-600">
+                    GST number validated successfully!
+                  </p>
+                )}
               </div>
             </div>
           </div>

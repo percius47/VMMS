@@ -26,8 +26,8 @@ export default function SignUp() {
 
     try {
       await signUp(email, password);
-      // Redirect to a confirmation page or dashboard
-      router.push("/auth/confirmation");
+      // Redirect to role selection page
+      router.push("/role-selection");
     } catch (err: any) {
       setError(err.message || "Failed to create account");
     } finally {

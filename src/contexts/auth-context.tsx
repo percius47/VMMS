@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string) => {
     const { error } = await supabase.auth.signUp({ email, password });
     if (error) throw error;
-    router.push("/dashboard");
+    router.push("/auth/confirmation");
   };
 
   const signIn = async (email: string, password: string) => {
@@ -62,7 +62,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password,
     });
     if (error) throw error;
-    router.push("/dashboard");
+
+    // Check if user already exists in company_contacts or vendors table
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    // Check company_contacts table
+    const { data: companyContact, error: companyError } = await supabase
+      .from("company_contacts")
+      .select("id")
+      .eq("user_id", user?.id)
+      .single();
+
+    if (companyContact && !companyError) {
+      // User is a company contact, redirect to company dashboard
+      router.push("/company-dashboard");
+      return;
+    }
+
+    // Check vendors table
+    const { data: vendor, error: vendorError } = await supabase
+      .from("vendors")
+      .select("id")
+      .eq("user_id", user?.id)
+      .single();
+
+    if (vendor && !vendorError) {
+      // User is a vendor, redirect to vendor dashboard
+      router.push("/vendor-dashboard");
+      return;
+    }
+
+    // If user doesn't exist in either table, redirect to role selection
+    router.push("/role-selection");
   };
 
   const signOut = async () => {

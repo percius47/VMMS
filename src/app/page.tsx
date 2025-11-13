@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import { redirect } from "next/navigation";
 
 export default async function Home() {
   const cookieStore = await cookies();
@@ -34,24 +35,7 @@ export default async function Home() {
 
   if (user) {
     // Redirect authenticated users to their dashboard
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Welcome back, {user.email}!
-          </h1>
-          <p className="text-gray-600 mb-6">
-            Redirecting you to your dashboard...
-          </p>
-          <Link
-            href="/dashboard"
-            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-          >
-            Go to Dashboard
-          </Link>
-        </div>
-      </div>
-    );
+    redirect("/dashboard");
   }
 
   return (
@@ -60,7 +44,6 @@ export default async function Home() {
         <h1 className="text-4xl font-bold text-gray-900">
           Vendor Master Management System
         </h1>
-  
       </div>
 
       <div className="mt-16 max-w-3xl text-center">
@@ -95,6 +78,15 @@ export default async function Home() {
               Generate insights on vendor performance and risk.
             </p>
           </div>
+        </div>
+
+        <div className="mt-12">
+          <Link
+            href="/auth/signin"
+            className="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors text-lg font-medium"
+          >
+            Get Started
+          </Link>
         </div>
       </div>
     </main>
