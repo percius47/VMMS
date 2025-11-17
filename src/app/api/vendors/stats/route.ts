@@ -18,22 +18,23 @@ export async function GET() {
       .from("vendors")
       .select("*", { count: "exact", head: true });
 
-    const { count: approvedVendors, error: approvedError } = await supabase
+    const { count: activeVendors, error: activeError } = await supabase
       .from("vendors")
       .select("*", { count: "exact", head: true })
-      .eq("status", "approved");
+      .eq("status", "active");
 
-    const { count: pendingVendors, error: pendingError } = await supabase
+    const { count: disabledVendors, error: disabledError } = await supabase
       .from("vendors")
       .select("*", { count: "exact", head: true })
-      .eq("status", "pending_approval");
+      .eq("status", "disabled");
 
-    const { count: rejectedVendors, error: rejectedError } = await supabase
-      .from("vendors")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "rejected");
+    const { count: blacklistedVendors, error: blacklistedError } =
+      await supabase
+        .from("vendors")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "blacklisted");
 
-    if (totalError || approvedError || pendingError || rejectedError) {
+    if (totalError || activeError || disabledError || blacklistedError) {
       return NextResponse.json(
         { error: "Failed to fetch vendor statistics" },
         { status: 500 }
@@ -42,9 +43,9 @@ export async function GET() {
 
     return NextResponse.json({
       totalVendors: totalVendors || 0,
-      approvedVendors: approvedVendors || 0,
-      pendingVendors: pendingVendors || 0,
-      rejectedVendors: rejectedVendors || 0,
+      activeVendors: activeVendors || 0,
+      disabledVendors: disabledVendors || 0,
+      blacklistedVendors: blacklistedVendors || 0,
     });
   } catch (error) {
     return NextResponse.json(

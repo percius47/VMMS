@@ -23,11 +23,11 @@ export async function POST(
     // Get the id from the promise
     const { id } = await params;
 
-    // Update vendor status to approved
+    // Update vendor status to active
     const { data, error } = await supabase
       .from("vendors")
       .update({
-        status: "approved",
+        status: "active",
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)
@@ -35,7 +35,7 @@ export async function POST(
 
     if (error) {
       return NextResponse.json(
-        { error: "Failed to approve vendor" },
+        { error: "Failed to activate vendor" },
         { status: 500 }
       );
     }
@@ -47,7 +47,7 @@ export async function POST(
     return NextResponse.json({ data: data[0] });
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to approve vendor" },
+      { error: "Failed to activate vendor" },
       { status: 500 }
     );
   }

@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import VendorOnboardingForm from "@/components/vendor-onboarding-form";
 import EditVendorForm from "@/components/edit-vendor-form";
+import DocumentUploadForm from "@/components/document-upload-form";
+import DocumentList from "@/components/document-list";
 
 interface Vendor {
   id: string;
@@ -150,240 +152,251 @@ export default function VendorDashboard() {
               <h2 className="text-xl font-semibold text-gray-800">
                 Vendor Profile
               </h2>
-                <div className="mt-1 flex items-center">
-                  <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      vendor.status === "approved"
-                        ? "bg-green-100 text-green-800"
-                        : vendor.status === "pending_approval"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {vendor.status === "approved"
-                      ? "Approved"
-                      : vendor.status === "pending_approval"
-                      ? "Pending Approval"
-                      : "Rejected"}
-                  </span>
-                </div>
+              <div className="mt-1 flex items-center">
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    vendor.status === "active"
+                      ? "bg-green-100 text-green-800"
+                      : vendor.status === "disabled"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : vendor.status === "blacklisted"
+                      ? "bg-red-100 text-red-800"
+                      : "bg-gray-100 text-gray-800"
+                  }`}
+                >
+                  {vendor.status === "active"
+                    ? "Active"
+                    : vendor.status === "disabled"
+                    ? "Disabled"
+                    : vendor.status === "blacklisted"
+                    ? "Blacklisted"
+                    : vendor.status || "Active"}
+                </span>
               </div>
+            </div>
 
-              <div className="px-6 py-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">
-                      Company Information
-                    </h3>
-                    <dl className="grid grid-cols-1 gap-4">
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">
-                          Company Name
-                        </dt>
-                        <dd className="mt-1 text-sm text-gray-900">
-                          {vendor.company_name}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">
-                          Legal Name
-                        </dt>
-                        <dd className="mt-1 text-sm text-gray-900">
-                          {vendor.legal_name || "N/A"}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">
-                          Vendor Type
-                        </dt>
-                        <dd className="mt-1 text-sm text-gray-900">
-                          {vendor.vendor_type}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">
-                          Industry Category
-                        </dt>
-                        <dd className="mt-1 text-sm text-gray-900">
-                          {vendor.industry_category || "N/A"}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">
-                          Website
-                        </dt>
-                        <dd className="mt-1 text-sm text-gray-900">
-                          {vendor.website ? (
-                            <a
-                              href={vendor.website}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-indigo-600 hover:text-indigo-500"
-                            >
-                              {vendor.website}
-                            </a>
-                          ) : (
-                            "N/A"
-                          )}
-                        </dd>
-                      </div>
-                    </dl>
-                  </div>
+            <div className="px-6 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Company Information
+                  </h3>
+                  <dl className="grid grid-cols-1 gap-4">
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Company Name
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {vendor.company_name}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Legal Name
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {vendor.legal_name || "N/A"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Vendor Type
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {vendor.vendor_type}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Industry Category
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {vendor.industry_category || "N/A"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Website
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {vendor.website ? (
+                          <a
+                            href={vendor.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-indigo-600 hover:text-indigo-500"
+                          >
+                            {vendor.website}
+                          </a>
+                        ) : (
+                          "N/A"
+                        )}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
 
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">
-                      Contact Information
-                    </h3>
-                    <dl className="grid grid-cols-1 gap-4">
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">
-                          Contact Person
-                        </dt>
-                        <dd className="mt-1 text-sm text-gray-900">
-                          {vendor.contact_person || "N/A"}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">
-                          Email
-                        </dt>
-                        <dd className="mt-1 text-sm text-gray-900">
-                          {vendor.email}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">
-                          Phone
-                        </dt>
-                        <dd className="mt-1 text-sm text-gray-900">
-                          {vendor.phone || "N/A"}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">
-                          Alternate Phone
-                        </dt>
-                        <dd className="mt-1 text-sm text-gray-900">
-                          {vendor.alternate_phone || "N/A"}
-                        </dd>
-                      </div>
-                    </dl>
-                  </div>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Contact Information
+                  </h3>
+                  <dl className="grid grid-cols-1 gap-4">
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Contact Person
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {vendor.contact_person || "N/A"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Email
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {vendor.email}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Phone
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {vendor.phone || "N/A"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Alternate Phone
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {vendor.alternate_phone || "N/A"}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
 
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">
-                      Address Information
-                    </h3>
-                    <dl className="grid grid-cols-1 gap-4">
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">
-                          Address
-                        </dt>
-                        <dd className="mt-1 text-sm text-gray-900">
-                          {vendor.address_line1}
-                          {vendor.address_line2 && (
-                            <>
-                              <br />
-                              {vendor.address_line2}
-                            </>
-                          )}
-                          <br />
-                          {vendor.city}, {vendor.state} - {vendor.pincode}
-                          <br />
-                          {vendor.country}
-                        </dd>
-                      </div>
-                    </dl>
-                  </div>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Address Information
+                  </h3>
+                  <dl className="grid grid-cols-1 gap-4">
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Address
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {vendor.address_line1}
+                        {vendor.address_line2 && (
+                          <>
+                            <br />
+                            {vendor.address_line2}
+                          </>
+                        )}
+                        <br />
+                        {vendor.city}, {vendor.state} - {vendor.pincode}
+                        <br />
+                        {vendor.country}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
 
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">
-                      Tax Information
-                    </h3>
-                    <dl className="grid grid-cols-1 gap-4">
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">
-                          PAN Number
-                        </dt>
-                        <dd className="mt-1 text-sm text-gray-900">
-                          {vendor.pan_number}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">
-                          GST Number
-                        </dt>
-                        <dd className="mt-1 text-sm text-gray-900">
-                          {vendor.gst_number}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">
-                          TAN Number
-                        </dt>
-                        <dd className="mt-1 text-sm text-gray-900">
-                          {vendor.tan_number || "N/A"}
-                        </dd>
-                      </div>
-                    </dl>
-                  </div>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Tax Information
+                  </h3>
+                  <dl className="grid grid-cols-1 gap-4">
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        PAN Number
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {vendor.pan_number}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        GST Number
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {vendor.gst_number}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        TAN Number
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {vendor.tan_number || "N/A"}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
 
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">
-                      Banking Information
-                    </h3>
-                    <dl className="grid grid-cols-1 gap-4">
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">
-                          Bank Name
-                        </dt>
-                        <dd className="mt-1 text-sm text-gray-900">
-                          {vendor.bank_name || "N/A"}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">
-                          Account Number
-                        </dt>
-                        <dd className="mt-1 text-sm text-gray-900">
-                          {vendor.bank_account_number
-                            ? "****" + vendor.bank_account_number.slice(-4)
-                            : "N/A"}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">
-                          IFSC Code
-                        </dt>
-                        <dd className="mt-1 text-sm text-gray-900">
-                          {vendor.ifsc_code || "N/A"}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">
-                          Branch Name
-                        </dt>
-                        <dd className="mt-1 text-sm text-gray-900">
-                          {vendor.branch_name || "N/A"}
-                        </dd>
-                      </div>
-                    </dl>
-                  </div>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Banking Information
+                  </h3>
+                  <dl className="grid grid-cols-1 gap-4">
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Bank Name
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {vendor.bank_name || "N/A"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Account Number
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {vendor.bank_account_number
+                          ? "****" + vendor.bank_account_number.slice(-4)
+                          : "N/A"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        IFSC Code
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {vendor.ifsc_code || "N/A"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Branch Name
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {vendor.branch_name || "N/A"}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
 
-                  <div className="md:col-span-2">
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">
-                      Description
-                    </h3>
-                    <p className="text-sm text-gray-900">
-                      {vendor.description || "No description provided."}
-                    </p>
-                  </div>
+                <div className="md:col-span-2">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Description
+                  </h3>
+                  <p className="text-sm text-gray-900">
+                    {vendor.description || "No description provided."}
+                  </p>
                 </div>
               </div>
             </div>
           </div>
+
+          <div className="mt-6">
+            <DocumentUploadForm />
+          </div>
+
+          <div className="mt-6">
+            <DocumentList />
+          </div>
         </div>
-      
+      </div>
     );
   }
 

@@ -13,6 +13,7 @@ export function Navbar() {
   const [isVendor, setIsVendor] = useState(false);
   const [isCompanyContact, setIsCompanyContact] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Always run the effect, but check if we should do anything
   useEffect(() => {
@@ -151,8 +152,144 @@ export function Navbar() {
               </Link>
             )}
           </div>
+          {/* Mobile menu button */}
+          <div className="-mr-2 flex items-center sm:hidden">
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+            >
+              <span className="sr-only">Open main menu</span>
+              {/* Menu icon when closed */}
+              {!mobileMenuOpen ? (
+                <svg
+                  className="block h-6 w-6"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
+              ) : (
+                // Close icon when open
+                <svg
+                  className="block h-6 w-6"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Mobile menu */}
+      {mobileMenuOpen && (
+        <div className="sm:hidden">
+          <div className="pt-2 pb-3 space-y-1">
+            {navItems.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`${
+                  pathname === item.href
+                    ? "bg-indigo-50 border-indigo-500 text-indigo-700"
+                    : "border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
+                } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {item.name}
+              </Link>
+            ))}
+            {/* Show My Vendor Profile link for vendors */}
+            {user && isVendor && (
+              <Link
+                href="/vendor-dashboard"
+                className={`${
+                  pathname === "/vendor-dashboard"
+                    ? "bg-indigo-50 border-indigo-500 text-indigo-700"
+                    : "border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
+                } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                My Vendor Profile
+              </Link>
+            )}
+            {/* Show Company Dashboard link for company contacts */}
+            {user && isCompanyContact && (
+              <Link
+                href="/company-dashboard"
+                className={`${
+                  pathname === "/company-dashboard"
+                    ? "bg-indigo-50 border-indigo-500 text-indigo-700"
+                    : "border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
+                } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Company Dashboard
+              </Link>
+            )}
+          </div>
+          <div className="pt-4 pb-3 border-t border-gray-200">
+            <div className="flex items-center px-4">
+              {user ? (
+                <div className="flex-shrink-0">
+                  <span className="text-sm font-medium text-gray-700">
+                    Welcome, {user.email}
+                  </span>
+                </div>
+              ) : null}
+            </div>
+            <div className="mt-3 space-y-1">
+              {user ? (
+                <>
+                  {/* Show Create Vendor Profile button for non-vendors and non-company contacts */}
+                  {!isVendor && !isCompanyContact && !loading && (
+                    <Link
+                      href="/vendor-dashboard"
+                      className="block px-4 py-2 text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Create Vendor Profile
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => {
+                      signOut();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-2 text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+                  >
+                    Sign out
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  className="block px-4 py-2 text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Login
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

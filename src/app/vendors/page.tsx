@@ -10,6 +10,7 @@ interface Vendor {
   company_name: string;
   gst_number: string;
   vendor_type: string;
+  status: string;
 }
 
 export default function Vendors() {
@@ -38,18 +39,13 @@ export default function Vendors() {
           .eq("user_id", user.id)
           .single();
 
-        console.log("Company data:", companyData); // Debug log
-        console.log("Company error:", companyError); // Debug log
-
         if (!companyData || companyError) {
           // If not a company contact, redirect to vendor dashboard
-          console.log("Not a company contact, redirecting..."); // Debug log
           router.push("/vendor-dashboard");
           return;
         }
 
         // If user is a company contact, fetch vendors
-        console.log("Is company contact, fetching vendors..."); // Debug log
         fetchVendors();
       } catch (error) {
         console.error("Error checking user authorization:", error);
@@ -63,20 +59,20 @@ export default function Vendors() {
   const fetchVendors = async () => {
     try {
       setLoading(true);
-      console.log("Attempting to fetch all vendors...");
 
       // Let's also try a simple count query to see if we can access the table at all
       const { count, error: countError } = await supabase
         .from("vendors")
         .select("*", { count: "exact", head: true });
 
-      console.log("Vendor count:", count);
       if (countError) {
         console.error("Count error:", countError);
       }
 
-      // Now fetch the actual data
-      const { data, error } = await supabase.from("vendors").select("*");
+      // Now fetch the actual data including status
+      const { data, error } = await supabase
+        .from("vendors")
+        .select("id, company_name, gst_number, vendor_type, status");
 
       if (error) {
         console.error("Supabase error:", error);
@@ -89,18 +85,9 @@ export default function Vendors() {
         throw error;
       }
 
-      console.log("Fetched vendors:", data); // Debug log
+      // Use the full vendor data directly
+      const vendorList = data || [];
 
-      // Filter to only the fields we need for display
-      const vendorList =
-        data?.map((vendor) => ({
-          id: vendor.id,
-          company_name: vendor.company_name,
-          gst_number: vendor.gst_number,
-          vendor_type: vendor.vendor_type,
-        })) || [];
-
-      console.log("Processed vendor list:", vendorList);
       setVendors(vendorList);
       setFilteredVendors(vendorList);
     } catch (error) {
@@ -113,25 +100,71 @@ export default function Vendors() {
     }
   };
 
+  // Function to update vendor status
+  const updateVendorStatus = async (vendorId: string, newStatus: string) => {
+    // Show confirmation dialog before proceeding
+    const confirmChange = window.confirm(
+      `Are you sure you want to change this vendor's status to "${newStatus}"? This action cannot be undone.`
+    );
+    
+    if (!confirmChange) {
+      return; // User cancelled the action
+    }
+    
+    try {
+      const response = await fetch(`/api/vendors/${vendorId}/status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to update vendor status: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const { data } = await response.json();
+
+      // Update the local state
+      setVendors((prevVendors) =>
+        prevVendors.map((vendor) =>
+          vendor.id === vendorId ? { ...vendor, status: newStatus } : vendor
+        )
+      );
+
+      setFilteredVendors((prevFilteredVendors) =>
+        prevFilteredVendors.map((vendor) =>
+          vendor.id === vendorId ? { ...vendor, status: newStatus } : vendor
+        )
+      );
+
+      // Show success message
+      alert("Vendor status updated successfully");
+    } catch (error: any) {
+      console.error("Error updating vendor status:", error);
+      alert(`Failed to update vendor status: ${error.message}`);
+    }
+  };
+
   // Filter vendors based on search term
   useEffect(() => {
-    console.log("Filtering vendors, searchTerm:", searchTerm); // Debug log
-    console.log("All vendors:", vendors); // Debug log
-
     if (!searchTerm) {
       setFilteredVendors(vendors);
-      console.log("No search term, showing all vendors:", vendors); // Debug log
       return;
     }
 
     const filtered = vendors.filter(
       (vendor) =>
-        vendor.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        vendor.gst_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        vendor.vendor_type.toLowerCase().includes(searchTerm.toLowerCase())
+        vendor.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        vendor.gst_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        vendor.vendor_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        vendor.status?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    console.log("Filtered vendors:", filtered); // Debug log
     setFilteredVendors(filtered);
   }, [searchTerm, vendors]);
 
@@ -182,12 +215,14 @@ export default function Vendors() {
                   />
                 </div>
               </div>
-              <button
-                onClick={fetchVendors}
-                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                Refresh
-              </button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={fetchVendors}
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Refresh Data
+                </button>
+              </div>
             </div>
           </div>
 
@@ -224,13 +259,25 @@ export default function Vendors() {
                   >
                     Vendor Type
                   </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Status
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {loading ? (
                   <tr>
                     <td
-                      colSpan={3}
+                      colSpan={5}
                       className="px-6 py-4 text-center text-sm text-gray-500"
                     >
                       <div className="flex justify-center items-center">
@@ -243,7 +290,14 @@ export default function Vendors() {
                   filteredVendors.map((vendor) => (
                     <tr key={vendor.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {vendor.company_name || "N/A"}
+                        <button
+                          onClick={() =>
+                            router.push(`/vendor-profile/${vendor.id}`)
+                          }
+                          className="text-indigo-600 hover:text-indigo-900 hover:underline focus:outline-none"
+                        >
+                          {vendor.company_name || "N/A"}
+                        </button>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {vendor.gst_number || "N/A"}
@@ -253,12 +307,40 @@ export default function Vendors() {
                           {vendor.vendor_type || "N/A"}
                         </span>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            vendor.status === "active"
+                              ? "bg-green-100 text-green-800"
+                              : vendor.status === "disabled"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : vendor.status === "blacklisted"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {vendor.status || "active"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <select
+                          value={vendor.status || "active"}
+                          onChange={(e) =>
+                            updateVendorStatus(vendor.id, e.target.value)
+                          }
+                          className="rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                        >
+                          <option value="active">Active</option>
+                          <option value="disabled">Disabled</option>
+                          <option value="blacklisted">Blacklisted</option>
+                        </select>
+                      </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
                     <td
-                      colSpan={3}
+                      colSpan={5}
                       className="px-6 py-4 text-center text-sm text-gray-500"
                     >
                       {searchTerm

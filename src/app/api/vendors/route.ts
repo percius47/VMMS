@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
         {
           ...vendorData,
           user_id: user.id,
-          status: "pending_approval",
+          status: "active",
           is_active: true,
         },
       ])

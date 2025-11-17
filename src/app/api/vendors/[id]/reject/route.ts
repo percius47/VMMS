@@ -23,11 +23,11 @@ export async function POST(
     // Get the id from the promise
     const { id } = await params;
 
-    // Update vendor status to rejected
+    // Update vendor status to blacklisted
     const { data, error } = await supabase
       .from("vendors")
       .update({
-        status: "rejected",
+        status: "blacklisted",
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)
@@ -35,7 +35,7 @@ export async function POST(
 
     if (error) {
       return NextResponse.json(
-        { error: "Failed to reject vendor" },
+        { error: "Failed to blacklist vendor" },
         { status: 500 }
       );
     }
@@ -47,7 +47,7 @@ export async function POST(
     return NextResponse.json({ data: data[0] });
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to reject vendor" },
+      { error: "Failed to blacklist vendor" },
       { status: 500 }
     );
   }

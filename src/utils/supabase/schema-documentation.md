@@ -80,9 +80,55 @@ CREATE TABLE vendors (
   gst_document_url TEXT,
   incorporation_document_url TEXT,
   address_proof_document_url TEXT,
-  status VARCHAR(50) DEFAULT 'pending_approval',
+  status VARCHAR(50) DEFAULT 'active',
   is_active BOOLEAN DEFAULT true,
   website VARCHAR(255),
   description TEXT
 );
+```
+
+## Documents Table
+
+The documents table stores metadata about documents uploaded by vendors.
+
+```sql
+-- Create documents table for storing document metadata
+CREATE TABLE documents (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  vendor_id UUID REFERENCES vendors(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  file_name VARCHAR(255) NOT NULL,
+  original_name VARCHAR(255) NOT NULL,
+  file_type VARCHAR(100) NOT NULL,
+  file_size INTEGER,
+  file_path TEXT NOT NULL,
+  description TEXT,
+  is_active BOOLEAN DEFAULT true
+);
+
+-- Create indexes for better query performance
+CREATE INDEX idx_documents_vendor_id ON documents(vendor_id);
+CREATE INDEX idx_documents_user_id ON documents(user_id);
+CREATE INDEX idx_documents_file_type ON documents(file_type);
+
+-- Enable Row Level Security
+ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
+
+-- Create policies for row level security
+CREATE POLICY "Users can view their own documents" ON documents
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own documents" ON documents
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own documents" ON documents
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own documents" ON documents
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- Grant permissions
+GRANT ALL ON TABLE documents TO authenticated;
 ```

@@ -6,9 +6,9 @@ import { useEffect, useState } from "react";
 
 interface VendorStats {
   totalVendors: number;
-  approvedVendors: number;
-  pendingVendors: number;
-  rejectedVendors: number;
+  activeVendors: number;
+  disabledVendors: number;
+  blacklistedVendors: number;
 }
 
 interface CompanyContactStats {
@@ -133,23 +133,23 @@ export default function AdminDashboard() {
             </div>
 
             <div className="border border-gray-200 rounded-lg p-4 text-center">
-              <p className="text-sm text-gray-500">Approved</p>
+              <p className="text-sm text-gray-500">Active</p>
               <p className="text-2xl font-bold text-green-600">
-                {vendorStats?.approvedVendors || 0}
+                {vendorStats?.activeVendors || 0}
               </p>
             </div>
 
             <div className="border border-gray-200 rounded-lg p-4 text-center">
-              <p className="text-sm text-gray-500">Pending</p>
+              <p className="text-sm text-gray-500">Disabled</p>
               <p className="text-2xl font-bold text-yellow-600">
-                {vendorStats?.pendingVendors || 0}
+                {vendorStats?.disabledVendors || 0}
               </p>
             </div>
 
             <div className="border border-gray-200 rounded-lg p-4 text-center">
-              <p className="text-sm text-gray-500">Rejected</p>
+              <p className="text-sm text-gray-500">Blacklisted</p>
               <p className="text-2xl font-bold text-red-600">
-                {vendorStats?.rejectedVendors || 0}
+                {vendorStats?.blacklistedVendors || 0}
               </p>
             </div>
           </div>
