@@ -91,7 +91,8 @@ export default function VendorOnboardingForm() {
   };
 
   const validateGST = (gst: string): boolean => {
-    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[0-9]{1}[A-Z]{1}[0-9A-Z]{1}$/;
+    const gstRegex =
+      /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[0-9]{1}[A-Z]{1}[0-9A-Z]{1}$/;
     return gstRegex.test(gst.toUpperCase());
   };
 
@@ -122,7 +123,9 @@ export default function VendorOnboardingForm() {
 
       // Validate GST format
       if (!validateGST(formData.gst_number)) {
-        throw new Error("Please enter a valid GST number (e.g., 12AAAAA1234AAAAA)");
+        throw new Error(
+          "Please enter a valid GST number (e.g., 12AAAAA1234AAAAA)"
+        );
       }
 
       // Validate phone number if provided
@@ -131,7 +134,10 @@ export default function VendorOnboardingForm() {
       }
 
       // Validate alternate phone number if provided
-      if (formData.alternate_phone && !validatePhone(formData.alternate_phone)) {
+      if (
+        formData.alternate_phone &&
+        !validatePhone(formData.alternate_phone)
+      ) {
         throw new Error("Please enter a valid 10-digit alternate phone number");
       }
 

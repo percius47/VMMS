@@ -104,6 +104,14 @@ export default function CompanyDashboard() {
             </div>
 
             <div className="px-6 py-4">
+              <div className="flex justify-end mb-4">
+                <button
+                  onClick={() => router.push("/company-edit")}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Edit Profile
+                </button>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <h3 className="text-lg font-medium text-gray-900 mb-4">
