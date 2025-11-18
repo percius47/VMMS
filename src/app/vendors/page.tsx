@@ -106,11 +106,11 @@ export default function Vendors() {
     const confirmChange = window.confirm(
       `Are you sure you want to change this vendor's status to "${newStatus}"? This action cannot be undone.`
     );
-    
+
     if (!confirmChange) {
       return; // User cancelled the action
     }
-    
+
     try {
       const response = await fetch(`/api/vendors/${vendorId}/status`, {
         method: "PUT",
